@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1000820839956",
+    "project_id": "authenticationapp-ec67b",
+    "storage_bucket": "authenticationapp-ec67b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1000820839956:android:487100ea809e817622b901",
+        "android_client_info": {
+          "package_name": "com.example.myactivityapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArarxFedUE1FqAmNDhEUaF975v4S5mPo0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
