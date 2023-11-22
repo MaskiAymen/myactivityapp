@@ -1,10 +1,15 @@
 
 
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:myactivityapp/screens/home_screen.dart';
 
 import 'package:myactivityapp/screens/signin_screen.dart';
+import 'package:tflite/tflite.dart';
 
 
 
@@ -16,6 +21,57 @@ class AjoutActivity extends StatefulWidget {
 }
 
 class _AjoutActivityState extends State<AjoutActivity> {
+
+  File? _image;
+  List? _output;
+
+  Future<void> _takePhoto() async {
+    //Pick an image from camera or gallery
+    final XFile? image =
+    await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (image == null) {
+      return null;
+    } else {
+      setState(() {
+        _image = File(image.path);
+        detectimage(_image!);
+      });
+    }
+    ;
+    detectimage(_image!);
+  }
+
+  loadmodel() async {
+    await Tflite.loadModel(
+        model: 'assets/model.tflite', labels: 'assets/labels.txt');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadmodel().then((value) {
+      setState(() {});
+    });
+  }
+
+  detectimage(File image) async {
+    print("okkkkkkkkkkkkkk" + image.path);
+    var prediction = await Tflite.runModelOnImage(
+        path: image.path,
+        numResults: 2,
+        threshold: 0.6,
+        imageMean: 127.5,
+        imageStd: 127.5);
+    setState(() {
+      _output = prediction!;
+      print(_output);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
 
   @override
@@ -54,34 +110,36 @@ class _AjoutActivityState extends State<AjoutActivity> {
               Center(
                 child: Stack(
                   children: [
-                    // _image == null
-                    //     ? Text('No image selected')
-                    //     : Image.file(
-                    //   _image!,
-                    //   width: 300,
-                    //   height: 300,
-                    // ),
+                    _image == null
+                        ? Text('Upload votre image')
+                        : Image.file(
+                      _image!,
+                      width: 100,
+                      height: 100,
+                    ),
+
                     Container(
                       width: 130,
                       height: 130,
                       decoration: BoxDecoration(
-                          border: Border.all(width: 4, color: Colors.white),
-                          boxShadow: [
-                            BoxShadow(
-                                spreadRadius: 2,
-                                blurRadius: 10,
+                        border: Border.all(width: 4, color: Colors.white),
+                        boxShadow: [
+                          BoxShadow(
+                              spreadRadius: 2,
+                              blurRadius: 10,
 
-                                color: Colors.black.withOpacity(0.1))
-                          ],
+                              color: Colors.black.withOpacity(0.1))
+                        ],
 
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: NetworkImage(
-                              'https://www.lifewire.com/thmb/TRGYpWa4KzxUt1Fkgr3FqjOd6VQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/cloud-upload-a30f385a928e44e199a62210d578375a.jpg'),
-                          ),
+                        // shape: BoxShape.circle,
+                        // image: DecorationImage(
+                        //   fit: BoxFit.cover,
+                        //   image: NetworkImage(
+                        //       'https://www.lifewire.com/thmb/TRGYpWa4KzxUt1Fkgr3FqjOd6VQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/cloud-upload-a30f385a928e44e199a62210d578375a.jpg'),
+                        // ),
                       ),
                     ),
+
                     Positioned(
                       bottom: 0,
                       right: 0,
@@ -95,6 +153,10 @@ class _AjoutActivityState extends State<AjoutActivity> {
                             color: Colors.blue),
                         child:  GestureDetector(
                           onTap: () {
+
+                            _takePhoto();
+
+
 
                           },
                           child: Icon(
@@ -111,13 +173,17 @@ class _AjoutActivityState extends State<AjoutActivity> {
 
               //les ligne des formulaire
               Container(
-               padding: EdgeInsets.symmetric(horizontal: 15),
+
+                padding: EdgeInsets.symmetric(horizontal: 15),
 
                 alignment: Alignment.center,
+
                 child: Form(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+
                     children: [
+                      SizedBox(height: 30,),
                       TextFormField(
                         maxLength: 25,
                         decoration: InputDecoration(
@@ -137,6 +203,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
 
                         ),
                       ),
+
                       TextFormField(
                         maxLength: 25,
                         decoration: InputDecoration(
@@ -175,56 +242,53 @@ class _AjoutActivityState extends State<AjoutActivity> {
 
                         ),
                       ),
-                      TextFormField(
-                        maxLength: 25,
-                        decoration: InputDecoration(
-                            hintText: "Categorie",
-                            hintStyle: TextStyle(color: Colors.red),
-                            labelText: "titre de votre activité",
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(color: Colors.red)
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(50),
-                                borderSide: BorderSide(color: Colors.green)
-                            ),
-                            prefixIcon: Icon(Icons.category)
+                      Container(
+                        child:Column(
+                          children: [
 
-                        ),
+                            _output != null
+                                ? Text((_output![0]['label']).toString().substring(2),
+                                style: TextStyle(fontSize: 28),)
+                                : Text(''),
+                            _output != null
+                                ? Text('Degé de confiance: ' + (_output![0]['confidence']).toString(),
+                                style: TextStyle(fontSize: 28))
+                                : Text('')
+                          ],
+                        ) ,
                       ),
-                     Row(
-                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                       children: [
-                         OutlinedButton(onPressed: (){},
-                           child: Text("Annuler",
-                             style: TextStyle(
-                                 fontSize: 15,
-                                 letterSpacing: 2,
-                                 color: Colors.black
-                             ),),
-                           style: OutlinedButton.styleFrom(
-                               padding: EdgeInsets.symmetric(horizontal: 50),
-                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
-                           ),
-                         ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          OutlinedButton(onPressed: (){
+                              HomeScreen();
+                          },
+                            child: Text("Annuler",
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  letterSpacing: 2,
+                                  color: Colors.black
+                              ),),
+                            style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(horizontal: 50),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+                            ),
+                          ),
 
-                         ElevatedButton(onPressed: (){
-
-                         },
-                           child: Text("Ajouter",
-                             style: TextStyle(
-                                 fontSize: 15,
-                                 letterSpacing: 2,
-                                 color: Colors.blue
-                             ),),
-                           style: ElevatedButton.styleFrom(
-                               padding: EdgeInsets.symmetric(horizontal: 50),
-                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
-                           ),),
-                       ],
-                     ),
+                          ElevatedButton(onPressed: (){
+                             HomeScreen(); },
+                            child: Text("Ajouter",
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  letterSpacing: 2,
+                                  color: Colors.blue
+                              ),),
+                            style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(horizontal: 50),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+                            ),),
+                        ],
+                      ),
                     ],
                   ),
 
