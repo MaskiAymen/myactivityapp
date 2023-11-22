@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:myactivityapp/Home.dart';
 import 'package:myactivityapp/screens/ajouter_activity.dart';
 import 'package:myactivityapp/screens/detail_activity.dart';
-import 'package:myactivityapp/test.dart';
+import 'package:myactivityapp/test';
 
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
