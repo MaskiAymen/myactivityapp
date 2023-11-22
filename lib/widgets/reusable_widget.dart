@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:myactivityapp/screens/home_screen.dart';
 
 Image logoWidget(String imageName) {
   return Image.asset(
@@ -67,5 +70,3 @@ Container signInSignUpButton(
     ),
   );
 }
-
-

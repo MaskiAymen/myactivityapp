@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:myactivityapp/Home.dart';
 import 'package:myactivityapp/screens/signup_screen.dart';
 
 import '../utils/colors_utils.dart';
 import '../widgets/reusable_widget.dart';
-import 'home_screen.dart';
+
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -41,7 +42,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 30,
                 ),
                 reusablaTextField("Entrer votre nom d'utilisateur",
-                    Icons.person_outline, false, _emailTextController),
+                    Icons.person_outline, false, _emailTextController,),
+
                 SizedBox(
                   height: 30,
                 ),
@@ -63,7 +65,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => HomeScreen()));
+                              builder: (context) => Home()));
                     }).onError((error, stackTrace) {
                       print("Error ${error.toString()}");
                     });
