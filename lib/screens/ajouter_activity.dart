@@ -93,12 +93,12 @@ class _AjoutActivityState extends State<AjoutActivity> {
       TaskSnapshot taskSnapshot = await uploadTask;
       String downloadURL = await taskSnapshot.ref.getDownloadURL();
 
-      // Store data in Firestore with the image download URL
+      // Stocker l'image dans firestore sous forme de url
       await FirebaseFirestore.instance.collection('activites').add({
         'titre': _nameController.text,
         'prix': _prixController.text,
         'lieu': _lieuController.text,
-        'image_url': downloadURL, // Add the image download URL
+        'image_url': downloadURL,
       });
 
       print('Data stored in Firestore with image URL: $downloadURL');
