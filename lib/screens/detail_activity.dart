@@ -37,31 +37,43 @@ class _DetailPageState extends State<DetailPage> {
             return Center(child: Text('Erreur : ${snapshot.error}'));
           } else {
             List<Map<String, dynamic>> activities =
-                snapshot.data as List<Map<String, dynamic>>;
+            snapshot.data as List<Map<String, dynamic>>;
+
+
             return ListView.builder(
               itemCount: activities.length,
               itemBuilder: (context, index) {
-                Map<String, dynamic> activity = activities[index];
+                Map<String, dynamic>? activity = activities[index];
+
+                // Vérifier si activity est null
+                if (activity == null) {
+                  return SizedBox.shrink(); // Retourne un widget invisible si activity est null
+                }
+
                 return Stack(
                   children: [
                     SizedBox(
-                        width: double.infinity,
-                        child: Image.network(
-                          activity['Image'],
-                        )),
-                  //  buttonArrow(context),
+                      width: double.infinity,
+                      child: Image.network(
+                        activity['image_url'] ?? '',
+                      ),
+                    ),
                     Container(
                       padding: const EdgeInsets.all(160.0),
                       child: ListTile(
-                        title: Text(activity['Titre']),
-                        subtitle:
-                            Text('${activity['Lieu']} - ${activity['Prix']}'),
+                        title: Text(activity['Titre'] ?? ''), // Utilisation du ?? pour fournir une valeur par défaut
+                        subtitle: Text(
+                          '${activity['Lieu'] ?? ''} - ${activity['Prix'] ?? ''}',
+                        ),
                       ),
                     )
                   ],
                 );
               },
             );
+
+
+
           }
         },
       );
@@ -82,7 +94,7 @@ class _DetailPageState extends State<DetailPage> {
 
   Future<List<Map<String, dynamic>>> getActivities() async {
     QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('activites').get();
+    await FirebaseFirestore.instance.collection('activites').get();
 
     return querySnapshot.docs
         .map((doc) => doc.data() as Map<String, dynamic>)

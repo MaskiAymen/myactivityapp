@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../Home.dart';
 import '../utils/colors_utils.dart';
 import '../widgets/reusable_widget.dart';
 import 'home_screen.dart';
@@ -77,7 +78,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           print("Créer un nouveau compte");
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) =>
-                              HomeScreen()));
+                              Home()));
                     }
                     ).onError((error, stackTrace) {
                       print("Error ${error.toString()}");

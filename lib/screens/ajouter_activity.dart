@@ -1,13 +1,16 @@
 import 'dart:io';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:myactivityapp/screens/home_screen.dart';
 
 import 'package:myactivityapp/screens/signin_screen.dart';
 import 'package:tflite/tflite.dart';
+
+import '../Home.dart';
 
 class AjoutActivity extends StatefulWidget {
   const AjoutActivity({super.key});
@@ -17,13 +20,16 @@ class AjoutActivity extends StatefulWidget {
 }
 
 class _AjoutActivityState extends State<AjoutActivity> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _prixController = TextEditingController();
+  final TextEditingController _lieuController = TextEditingController();
+
   File? _image;
   List? _output;
 
   Future<void> _prendrePhoto() async {
-    //Pick an image from camera or gallery
     final XFile? image =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    await ImagePicker().pickImage(source: ImageSource.gallery);
     if (image == null) {
       return null;
     } else {
@@ -50,7 +56,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
   }
 
   detecterImage(File image) async {
-    print("okkkkkkkkkkkkkk" + image.path);
+    print("valide" + image.path);
     var prediction = await Tflite.runModelOnImage(
         path: image.path,
         numResults: 2,
@@ -67,6 +73,42 @@ class _AjoutActivityState extends State<AjoutActivity> {
   void dispose() {
     super.dispose();
   }
+  void _storeDataInFirestore() async {
+    try {
+      if (_image == null) {
+        print('Image not selected.');
+        return;
+      }
+
+      // Create a reference to the Firebase Storage location
+      Reference storageReference = FirebaseStorage.instance
+          .ref()
+          .child('images')
+          .child('activity_image_${DateTime.now().millisecondsSinceEpoch}.png');
+
+      // Upload the file to Firebase Storage
+      UploadTask uploadTask = storageReference.putFile(_image!);
+
+      // Wait for the upload to complete and get the download URL
+      TaskSnapshot taskSnapshot = await uploadTask;
+      String downloadURL = await taskSnapshot.ref.getDownloadURL();
+
+      // Store data in Firestore with the image download URL
+      await FirebaseFirestore.instance.collection('activites').add({
+        'titre': _nameController.text,
+        'prix': _prixController.text,
+        'lieu': _lieuController.text,
+        'image_url': downloadURL, // Add the image download URL
+      });
+
+      print('Data stored in Firestore with image URL: $downloadURL');
+    } catch (e) {
+      print('Error: $e');
+      // Handle the error gracefully
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +118,12 @@ class _AjoutActivityState extends State<AjoutActivity> {
         leading: IconButton(
           icon: Icon(
             Icons.keyboard_return,
-            color: Colors.white,
+            color: Colors.brown,
           ),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => SignInScreen()));
+          },
         ),
         actions: [
           IconButton(
@@ -107,10 +152,10 @@ class _AjoutActivityState extends State<AjoutActivity> {
                     _image == null
                         ? Text('Upload votre image')
                         : Image.file(
-                            _image!,
-                            width: 100,
-                            height: 100,
-                          ),
+                      _image!,
+                      width: 100,
+                      height: 100,
+                    ),
                     Container(
                       width: 130,
                       height: 130,
@@ -158,11 +203,21 @@ class _AjoutActivityState extends State<AjoutActivity> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
-                        height: 30,
+                        height: 18,
                       ),
                       TextFormField(
+
                         maxLength: 25,
+                        controller: _nameController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer votre nom.';
+                          }
+                          return null;
+                        },
+
                         decoration: InputDecoration(
+
                             hintText: "titre",
                             hintStyle: TextStyle(color: Colors.red),
                             labelText: "titre de votre activité",
@@ -177,6 +232,13 @@ class _AjoutActivityState extends State<AjoutActivity> {
                       ),
                       TextFormField(
                         maxLength: 25,
+                        controller: _prixController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer prix.';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                             hintText: "prix",
                             hintStyle: TextStyle(color: Colors.red),
@@ -192,6 +254,13 @@ class _AjoutActivityState extends State<AjoutActivity> {
                       ),
                       TextFormField(
                         maxLength: 25,
+                        controller: _lieuController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer le lieu.';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                             hintText: "lieu",
                             hintStyle: TextStyle(color: Colors.red),
@@ -205,22 +274,23 @@ class _AjoutActivityState extends State<AjoutActivity> {
                                 borderSide: BorderSide(color: Colors.green)),
                             prefixIcon: Icon(Icons.map_sharp)),
                       ),
+
                       Container(
                         child: Column(
                           children: [
                             _output != null
                                 ? Text(
-                                    (_output![0]['label'])
-                                        .toString()
-                                        .substring(2),
-                                    style: TextStyle(fontSize: 28),
-                                  )
+                              (_output![0]['label'])
+                                  .toString()
+                                  .substring(2),
+                              style: TextStyle(fontSize: 28),
+                            )
                                 : Text(''),
                             _output != null
                                 ? Text(
-                                    'Degé de confiance: ' +
-                                        (_output![0]['confidence']).toString(),
-                                    style: TextStyle(fontSize: 28))
+                                'Degé de confiance: ' +
+                                    (_output![0]['confidence']).toString(),
+                                style: TextStyle(fontSize: 28))
                                 : Text('')
                           ],
                         ),
@@ -230,7 +300,8 @@ class _AjoutActivityState extends State<AjoutActivity> {
                         children: [
                           OutlinedButton(
                             onPressed: () {
-                              HomeScreen();
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) => Home()));
                             },
                             child: Text(
                               "Annuler",
@@ -246,7 +317,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              HomeScreen();
+                              _storeDataInFirestore();
                             },
                             child: Text(
                               "Ajouter",
@@ -270,6 +341,13 @@ class _AjoutActivityState extends State<AjoutActivity> {
           ),
         ),
       ),
+
+
+
+
+
     );
+
+
   }
 }

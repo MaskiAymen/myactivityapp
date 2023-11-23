@@ -65,23 +65,60 @@ class _HomeScreenState extends State<HomeScreen> {
             return ListView.builder(
               itemCount: activities.length,
               itemBuilder: (context, index) {
-                Map<String, dynamic> activity = activities[index];
-                return Container(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
+                Map<String, dynamic>? activity = activities[index];
+
+                // Vérifier si activity est null
+                if (activity == null) {
+                  return SizedBox.shrink(); // Retourne un widget invisible si activity est null
+                }
+
+                String title = activity['titre'] ?? ''; // Utilisation du ?? pour fournir une valeur par défaut
+                String lieu = activity['lieu'] ?? '';
+                String prix = activity['prix'] ?? '';
+                String image = activity['image_url'] ?? '';
+
+                // Vérifier si l'URL de l'image n'est pas vide
+                if (image.isNotEmpty) {
+                  return Container(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => DetailPage()));
-                    },child: ListTile(
-                    title: Text(activity['Titre']),
-                    subtitle: Text('${activity['Lieu']} - ${activity['Prix']}'),
-                    leading: Image.network(activity['Image']),
-                  ),
-                  ),
-                );
+                            builder: (context) => DetailPage(),
+                          ),
+                        );
+                      },
+                      child: ListTile(
+                        title: Text(title),
+                        subtitle: Text('$lieu - $prix'),
+                        leading: Image.network(image),
+                      ),
+                    ),
+                  );
+                } else {
+                  // Retourner un widget différent (par exemple, un texte) si l'URL est vide
+                  return Container(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailPage(),
+                          ),
+                        );
+                      },
+                      child: ListTile(
+                        title: Text(activity['Titre']),
+                        subtitle: Text('${activity['Lieu']} - ${activity['Prix']}'),
+                        leading: Text(  activity['Image'] ?? '',),
+                      ),
+                    ),
+                  );
+                }
               },
             );
+
           }
         },
       );

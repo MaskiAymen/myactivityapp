@@ -44,6 +44,7 @@ dependencies:
   text_hover: ^1.0.0+1
   image_picker: ^0.8.6
   tflite: ^1.1.2
+  firebase_storage: ^11.5.0
 
 
 
