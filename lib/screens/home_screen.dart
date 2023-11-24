@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myactivityapp/screens/ajouter_activity.dart';
+import 'package:myactivityapp/screens/profile.dart';
 import 'package:myactivityapp/screens/signin_screen.dart';
 
 import 'detail_activity.dart';
@@ -35,8 +37,56 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               });
             },
-          )
+          ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text('Accueil'),
+              onTap: () {
+                Navigator.pop(context);
+
+              },
+            ),
+            ListTile(
+              title: Text('Ajout'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AjoutActivity()), // Assuming AjoutPage is the name of your page
+                );
+                _onItemTapped(1);
+              },
+            ),
+            ListTile(
+              title: Text('Profil'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()), // Assuming AjoutPage is the name of your page
+                );
+                _onItemTapped(2);
+              },
+            ),
+          ],
+        ),
       ),
       body: _buildBody(),
     );
@@ -66,6 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return Column(
               children: [
                 _buildFilterBar(),
+                SizedBox(height: 10),
                 Text(
                   'Catégorie sélectionnée: $selectedCategory',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -86,71 +137,56 @@ class _HomeScreenState extends State<HomeScreen> {
                       String nbMin = activity['nbMin'] ?? '';
                       String image = activity['image_url'] ?? '';
 
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
+                      return Card(
+                        elevation: 5,
+                        margin: EdgeInsets.all(10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Card(
-                          elevation: 0,
-                          margin:
-                          EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                          color: Colors.transparent,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DetailPage(
-                                    activities: activities,
-                                    selectedIndex: index,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: ListTile(
-                              contentPadding: EdgeInsets.all(16),
-                              title: Container(
-                                color: Colors.indigo,
-                                padding: EdgeInsets.all(8),
-                                child: Text(
-                                  title,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors.white,
-                                  ),
+                        child: ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailPage(
+                                  activities: activities,
+                                  selectedIndex: index,
                                 ),
                               ),
-                              subtitle: Container(
-                                color: Colors.blue,
-                                padding: EdgeInsets.all(8),
-                                child: Text(
-                                  '$lieu - $prix - $nbMin' ,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                  ),
-                                ),
+                            );
+                          },
+                          contentPadding: EdgeInsets.all(16),
+                          title: Container(
+                            color: Colors.indigo,
+                            padding: EdgeInsets.all(8),
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.white,
                               ),
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  width: 60,
-                                  height: 60,
-                                  child: Image.network(
-                                    image,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                            ),
+                          ),
+                          subtitle: Container(
+                            color: Colors.blue,
+                            padding: EdgeInsets.all(8),
+                            child: Text(
+                              '$lieu - $prix - $nbMin',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              child: Image.network(
+                                image,
+                                fit: BoxFit.cover,
                               ),
                             ),
                           ),
