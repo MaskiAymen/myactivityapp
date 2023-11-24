@@ -1,11 +1,13 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:myactivityapp/screens/home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tflite/tflite.dart';
+
+import 'home_screen.dart';
 
 class AjoutActivity extends StatefulWidget {
   const AjoutActivity({Key? key}) : super(key: key);
@@ -18,7 +20,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _prixController = TextEditingController();
   final TextEditingController _lieuController = TextEditingController();
-  final TextEditingController _nbMinController=TextEditingController();
+  final TextEditingController _nbMinController = TextEditingController();
 
   File? _image;
   List? _output;
@@ -115,12 +117,10 @@ class _AjoutActivityState extends State<AjoutActivity> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('Ajouter une activité')),
+        title: Text('Ajouter une activité'),
+        centerTitle: true,
         leading: IconButton(
-          icon: Icon(
-            Icons.keyboard_return,
-            color: Colors.brown,
-          ),
+          icon: Icon(Icons.keyboard_return, color: Colors.brown),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -137,253 +137,202 @@ class _AjoutActivityState extends State<AjoutActivity> {
           )
         ],
       ),
-      body: Container(
-        padding: EdgeInsets.only(left: 15, top: 20, right: 15),
-        child: GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
-          child: ListView(
-            children: [
-              Center(
-                child: Stack(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Stack(
                   children: [
-                    _image == null
-                        ? Text('Upload votre image')
-                        : Image.file(
-                      _image!,
-                      width: 100,
-                      height: 100,
-                    ),
                     Container(
                       width: 130,
                       height: 130,
                       decoration: BoxDecoration(
-                        border: Border.all(width: 4, color: Colors.white),
+                        shape: BoxShape.circle,
+                        border: Border.all(width: 4, color: Colors.blue),
                         boxShadow: [
                           BoxShadow(
-                              spreadRadius: 2,
-                              blurRadius: 10,
-                              color: Colors.black.withOpacity(0.1))
+                            spreadRadius: 2,
+                            blurRadius: 10,
+                            color: Colors.black.withOpacity(0.1),
+                          ),
                         ],
+                      ),
+                      child: _image == null
+                          ? Center(
+                        child: Text(
+                          'Ajouter une image',
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                          : ClipOval(
+                        child: Image.file(
+                          _image!,
+                          width: 130,
+                          height: 130,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     Positioned(
                       bottom: 0,
                       right: 0,
-                      child: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
+                      child: GestureDetector(
+                        onTap: () {
+                          _prendrePhoto();
+                        },
+                        child: Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(width: 4, color: Colors.blue),
-                            color: Colors.blue),
-                        child: GestureDetector(
-                          onTap: () {
-                            _prendrePhoto();
-                          },
+                            color: Colors.blue,
+                          ),
                           child: Icon(
                             Icons.upload,
                             size: 20.0,
+                            color: Colors.white,
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 15),
-                alignment: Alignment.center,
-                child: Form(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 18,
+                SizedBox(height: 10),
+                _buildTextField(
+                  _nameController,
+                  'Titre de votre activité',
+                  Icons.title,
+                  'Veuillez entrer le titre de votre activité',
+                ),
+                SizedBox(height: 10),
+                _buildTextField(
+                  _prixController,
+                  'Prix',
+                  Icons.price_change,
+                  'Veuillez entrer le prix',
+                ),
+                SizedBox(height: 10),
+                _buildTextField(
+                  _nbMinController,
+                  'Nombre de personnes minimum',
+                  Icons.group,
+                  'Veuillez entrer le nombre minimum de personnes',
+                ),
+                SizedBox(height: 10),
+                _buildTextField(
+                  _lieuController,
+                  'Lieu',
+                  Icons.map_sharp,
+                  'Veuillez entrer le lieu de votre activité',
+                ),
+                SizedBox(height: 10),
+                _output != null
+                    ? Text(
+                  'Catégorie: ${_output![0]['label'].toString().substring(2)}',
+                  style: TextStyle(fontSize: 18),
+                )
+                    : Container(),
+                SizedBox(height: 10),
+                _output != null
+                    ? Text(
+                  'Degré de confiance: ${(_output![0]['confidence'] * 100).toStringAsFixed(2)}%',
+                  style: TextStyle(fontSize: 18),
+                )
+                    : Container(),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HomeScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Annuler',
+                        style: TextStyle(fontSize: 15),
                       ),
-                      TextFormField(
-                        maxLength: 25,
-                        controller: _nameController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer votre nom.';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            hintText: "titre",
-                            hintStyle: TextStyle(color: Colors.red),
-                            labelText: "titre de votre activité",
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(color: Colors.red)),
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(50),
-                                borderSide: BorderSide(color: Colors.green)),
-                            prefixIcon: Icon(Icons.title)),
-                      ),
-                      TextFormField(
-                        maxLength: 25,
-                        controller: _prixController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer prix.';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            hintText: "prix",
-                            hintStyle: TextStyle(color: Colors.red),
-                            labelText: "entrer le prix",
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(color: Colors.red)),
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(50),
-                                borderSide: BorderSide(color: Colors.green)),
-                            prefixIcon: Icon(Icons.price_change)),
-                      ),
-                      TextFormField(
-                        maxLength: 25,
-                        controller: _nbMinController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer le nombre de personne.';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            hintText: "nombre de personne",
-                            hintStyle: TextStyle(color: Colors.red),
-                            labelText: "entrer le nombre de personne",
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(color: Colors.red)),
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(50),
-                                borderSide: BorderSide(color: Colors.green)),
-                            prefixIcon: Icon(Icons.price_change)),
-                      ),
-                      TextFormField(
-                        maxLength: 25,
-                        controller: _lieuController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer le lieu.';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            hintText: "lieu",
-                            hintStyle: TextStyle(color: Colors.red),
-                            labelText: "Definir le lieu de votre activité",
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(color: Colors.red)),
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(50),
-                                borderSide: BorderSide(color: Colors.green)),
-                            prefixIcon: Icon(Icons.map_sharp)),
-                      ),
-                      Container(
-                        child: Column(
-                          children: [
-                            _output != null
-                                ? Text(
-                              (_output![0]['label'])
-                                  .toString()
-                                  .substring(2),
-                              style: TextStyle(fontSize: 28),
-                            )
-                                : Text(''),
-                            _output != null
-                                ? Text(
-                                'Degé de confiance: ' +
-                                    (_output![0]['confidence']).toString(),
-                                style: TextStyle(fontSize: 28))
-                                : Text('')
-                          ],
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        primary: Colors.grey,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          OutlinedButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => HomeScreen(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              "Annuler",
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  letterSpacing: 2,
-                                  color: Colors.black),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(horizontal: 50),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20))),
-                          ),
-                          ElevatedButton(
-                            onPressed: () async {
-                               _storeDataInFirestore();
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text("Activité ajoutée avec succès"),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => HomeScreen(),
-                                            ),
-                                          );
-                                        },
-                                        child: Text("OK"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        _storeDataInFirestore();
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("Activité ajoutée avec succès"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => HomeScreen(),
                                       ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            child: Text(
-                              "Ajouter",
-                              style: TextStyle(
-                                fontSize: 15,
-                                letterSpacing: 2,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-
-                        ],
+                                    );
+                                  },
+                                  child: Text("OK"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      child: Text(
+                        'Ajouter',
+                        style: TextStyle(fontSize: 15),
                       ),
-                    ],
-                  ),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        primary: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      TextEditingController controller,
+      String labelText,
+      IconData icon,
+      String hintText,
+      ) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
     );

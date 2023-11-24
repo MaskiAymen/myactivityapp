@@ -46,6 +46,8 @@ dependencies:
   tflite: ^1.1.2
   firebase_storage: ^11.5.0
   badges: ^2.0.1
+  hive: ^2.0.4
+  hive_flutter: ^1.1.0
 
 
 
