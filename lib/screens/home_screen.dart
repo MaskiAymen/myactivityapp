@@ -40,54 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              title: Text('Accueil'),
-              onTap: () {
-                Navigator.pop(context);
-
-              },
-            ),
-            ListTile(
-              title: Text('Ajout'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AjoutActivity()), // Assuming AjoutPage is the name of your page
-                );
-                _onItemTapped(1);
-              },
-            ),
-            ListTile(
-              title: Text('Profil'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfilePage()), // Assuming AjoutPage is the name of your page
-                );
-                _onItemTapped(2);
-              },
-            ),
-          ],
-        ),
-      ),
       body: _buildBody(),
     );
   }
