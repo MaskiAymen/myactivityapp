@@ -1,103 +1,183 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
-import 'package:myactivityapp/screens/home_screen.dart';
-import 'package:text_hover/text_hover.dart';
-
-import '../widgets/reusable_widget.dart';
+import 'package:myactivityapp/screens/panier.dart';
+import 'package:badges/badges.dart' as badges;
 
 class DetailPage extends StatefulWidget {
-  const DetailPage({super.key});
+  final List<Map<String, dynamic>> activities;
+  final int selectedIndex;
+
+  const DetailPage({
+    Key? key,
+    required this.activities,
+    required this.selectedIndex,
+  }) : super(key: key);
 
   @override
   State<DetailPage> createState() => _DetailPageState();
 }
 
 class _DetailPageState extends State<DetailPage> {
-  int _selectedIndex = 0;
+  late List<Map<String, dynamic>> activities;
+  late Map<String, dynamic> currentActivity;
+  List<Map<String, dynamic>> cartItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    activities = widget.activities;
+    currentActivity = activities[widget.selectedIndex];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Activité'),
+        title: Text('Détails d\'activité'),
+        actions: [
+          badges.Badge(
+            badgeContent: Text(
+              '${cartItems.length}',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            showBadge: true,
+            shape: BadgeShape.circle,
+            badgeColor: Colors.red,
+            position: BadgePosition.topEnd(top: 0, end: 3),
+            animationType: BadgeAnimationType.slide,
+            child: IconButton(
+              icon: Icon(Icons.shopping_cart_outlined),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PanierPage(cartItems: cartItems),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       body: _buildBody(),
     );
   }
 
   Widget _buildBody() {
-    if (_selectedIndex == 0) {
-      return FutureBuilder(
-        future: getActivities(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Erreur : ${snapshot.error}'));
-          } else {
-            List<Map<String, dynamic>> activities =
-            snapshot.data as List<Map<String, dynamic>>;
-
-
-            return ListView.builder(
-              itemCount: activities.length,
-              itemBuilder: (context, index) {
-                Map<String, dynamic>? activity = activities[index];
-
-                // Vérifier si activity est null
-                if (activity == null) {
-                  return SizedBox.shrink(); // Retourne un widget invisible si activity est null
-                }
-
-                return Stack(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: Image.network(
-                        activity['image_url'] ?? '',
-                      ),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 300,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      currentActivity['image_url'] ?? '',
+                      fit: BoxFit.cover,
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(160.0),
-                      child: ListTile(
-                        title: Text(activity['Titre'] ?? ''), // Utilisation du ?? pour fournir une valeur par défaut
-                        subtitle: Text(
-                          '${activity['Lieu'] ?? ''} - ${activity['Prix'] ?? ''}',
-                        ),
-                      ),
-                    )
-                  ],
-                );
-              },
-            );
+                  ),
+                ),
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_back),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  currentActivity['titre'] ?? '',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '${currentActivity['lieu'] ?? ''} - ${currentActivity['prix'] ?? ''}',
 
-
-
-          }
-        },
-      );
-    } else if (_selectedIndex == 1) {
-      // Contenu d'Ajout
-      return Text('Contenu d\'Ajout');
-    } else {
-      // Contenu de Profil
-      return Text('Contenu de Profil');
-    }
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  'NbMin: ${currentActivity['nbMin'] ?? ''}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.green,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Catégorie: ${currentActivity['categories'] ?? ''}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.green,
+                  ),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    addToCart(currentActivity);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Ajouté au panier avec succès"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("OK"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Text('Ajouter au panier'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue,
+                    onPrimary: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _onItemTapped(int index) {
+  void addToCart(Map<String, dynamic> item) {
     setState(() {
-      _selectedIndex = index;
+      cartItems.add(item);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ajouté au panier'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     });
-  }
-
-  Future<List<Map<String, dynamic>>> getActivities() async {
-    QuerySnapshot querySnapshot =
-    await FirebaseFirestore.instance.collection('activites').get();
-
-    return querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
   }
 }

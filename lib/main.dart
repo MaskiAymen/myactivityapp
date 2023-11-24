@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       ),
       //home: const SignInScreen(),
       //home: const Home(),
-      home: AjoutActivity(),
+      home: const Home(),
     );
   }
 }

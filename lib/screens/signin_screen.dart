@@ -27,10 +27,10 @@ class _SignInScreenState extends State<SignInScreen> {
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
-          hexStringToColor("CB2B93"),
-          hexStringToColor("9546C4"),
-          hexStringToColor("5E61F4"),
-        ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+              hexStringToColor("CB2B93"),
+              hexStringToColor("9546C4"),
+              hexStringToColor("5E61F4"),
+            ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
@@ -42,7 +42,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 30,
                 ),
                 reusablaTextField("Entrer votre nom d'utilisateur",
-                    Icons.person_outline, false, _emailTextController,),
+                  Icons.person_outline, false, _emailTextController,),
 
                 SizedBox(
                   height: 30,
@@ -55,11 +55,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 signInSignUpButton(
                   context,
                   true,
-                  () {
+                      () {
                     FirebaseAuth.instance
                         .signInWithEmailAndPassword(
-                            email: _emailTextController.text,
-                            password: _passwordTextController.text)
+                        email: _emailTextController.text,
+                        password: _passwordTextController.text)
                         .then((value) {
                       print("Créer un nouveau compte");
                       Navigator.push(

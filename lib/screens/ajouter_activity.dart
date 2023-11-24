@@ -1,19 +1,14 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'package:myactivityapp/screens/signin_screen.dart';
+import 'package:myactivityapp/screens/home_screen.dart';
 import 'package:tflite/tflite.dart';
 
-import '../Home.dart';
-
 class AjoutActivity extends StatefulWidget {
-  const AjoutActivity({super.key});
+  const AjoutActivity({Key? key}) : super(key: key);
 
   @override
   State<AjoutActivity> createState() => _AjoutActivityState();
@@ -23,6 +18,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _prixController = TextEditingController();
   final TextEditingController _lieuController = TextEditingController();
+  final TextEditingController _nbMinController=TextEditingController();
 
   File? _image;
   List? _output;
@@ -38,7 +34,6 @@ class _AjoutActivityState extends State<AjoutActivity> {
         detecterImage(_image!);
       });
     }
-    ;
     detecterImage(_image!);
   }
 
@@ -73,6 +68,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
   void dispose() {
     super.dispose();
   }
+
   void _storeDataInFirestore() async {
     try {
       if (_image == null) {
@@ -80,35 +76,40 @@ class _AjoutActivityState extends State<AjoutActivity> {
         return;
       }
 
-      // Create a reference to the Firebase Storage location
       Reference storageReference = FirebaseStorage.instance
           .ref()
           .child('images')
           .child('activity_image_${DateTime.now().millisecondsSinceEpoch}.png');
 
-      // Upload the file to Firebase Storage
       UploadTask uploadTask = storageReference.putFile(_image!);
-
-      // Wait for the upload to complete and get the download URL
       TaskSnapshot taskSnapshot = await uploadTask;
       String downloadURL = await taskSnapshot.ref.getDownloadURL();
 
-      // Stocker l'image dans firestore sous forme de url
       await FirebaseFirestore.instance.collection('activites').add({
         'titre': _nameController.text,
         'prix': _prixController.text,
+        'nbMin': _nbMinController.text,
         'lieu': _lieuController.text,
         'image_url': downloadURL,
+        'categories':
+        _output != null ? _output![0]['label'].toString().substring(2) : '',
       });
 
-      print('Data stored in Firestore with image URL: $downloadURL');
+      // Afficher le message de succès
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Activité ajoutée avec succès!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Retour à l'écran précédent
+      Navigator.pop(context);
     } catch (e) {
       print('Error: $e');
       // Handle the error gracefully
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -121,8 +122,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
             color: Colors.brown,
           ),
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => SignInScreen()));
+            Navigator.pop(context);
           },
         ),
         actions: [
@@ -131,8 +131,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
             onPressed: () {
               FirebaseAuth.instance.signOut().then((value) {
                 print("Deconnexion");
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SignInScreen()));
+                Navigator.pop(context);
               });
             },
           )
@@ -193,8 +192,6 @@ class _AjoutActivityState extends State<AjoutActivity> {
                   ],
                 ),
               ),
-
-              //les ligne des formulaire
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 15),
                 alignment: Alignment.center,
@@ -206,7 +203,6 @@ class _AjoutActivityState extends State<AjoutActivity> {
                         height: 18,
                       ),
                       TextFormField(
-
                         maxLength: 25,
                         controller: _nameController,
                         validator: (value) {
@@ -215,9 +211,7 @@ class _AjoutActivityState extends State<AjoutActivity> {
                           }
                           return null;
                         },
-
                         decoration: InputDecoration(
-
                             hintText: "titre",
                             hintStyle: TextStyle(color: Colors.red),
                             labelText: "titre de votre activité",
@@ -254,6 +248,28 @@ class _AjoutActivityState extends State<AjoutActivity> {
                       ),
                       TextFormField(
                         maxLength: 25,
+                        controller: _nbMinController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer le nombre de personne.';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                            hintText: "nombre de personne",
+                            hintStyle: TextStyle(color: Colors.red),
+                            labelText: "entrer le nombre de personne",
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(color: Colors.red)),
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                                borderSide: BorderSide(color: Colors.green)),
+                            prefixIcon: Icon(Icons.price_change)),
+                      ),
+                      TextFormField(
+                        maxLength: 25,
                         controller: _lieuController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -274,7 +290,6 @@ class _AjoutActivityState extends State<AjoutActivity> {
                                 borderSide: BorderSide(color: Colors.green)),
                             prefixIcon: Icon(Icons.map_sharp)),
                       ),
-
                       Container(
                         child: Column(
                           children: [
@@ -300,8 +315,12 @@ class _AjoutActivityState extends State<AjoutActivity> {
                         children: [
                           OutlinedButton(
                             onPressed: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) => Home()));
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HomeScreen(),
+                                ),
+                              );
                             },
                             child: Text(
                               "Annuler",
@@ -316,21 +335,47 @@ class _AjoutActivityState extends State<AjoutActivity> {
                                     borderRadius: BorderRadius.circular(20))),
                           ),
                           ElevatedButton(
-                            onPressed: () {
-                              _storeDataInFirestore();
+                            onPressed: () async {
+                               _storeDataInFirestore();
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text("Activité ajoutée avec succès"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => HomeScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text("OK"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             },
                             child: Text(
                               "Ajouter",
                               style: TextStyle(
-                                  fontSize: 15,
-                                  letterSpacing: 2,
-                                  color: Colors.blue),
+                                fontSize: 15,
+                                letterSpacing: 2,
+                                color: Colors.blue,
+                              ),
                             ),
                             style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(horizontal: 50),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20))),
+                              padding: EdgeInsets.symmetric(horizontal: 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
                           ),
+
                         ],
                       ),
                     ],
@@ -341,13 +386,6 @@ class _AjoutActivityState extends State<AjoutActivity> {
           ),
         ),
       ),
-
-
-
-
-
     );
-
-
   }
 }
