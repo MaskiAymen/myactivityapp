@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PanierPage extends StatelessWidget {
   final List<Map<String, dynamic>> cartItems;
@@ -10,6 +11,14 @@ class PanierPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Panier'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: () {
+              _addToFirestore(context); // Passer le contexte à la fonction
+            },
+          ),
+        ],
       ),
       body: _buildBody(),
     );
@@ -47,6 +56,21 @@ class PanierPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _addToFirestore(BuildContext context) async {
+    CollectionReference panierCollection =
+    FirebaseFirestore.instance.collection('panier');
+
+    for (Map<String, dynamic> item in cartItems) {
+      await panierCollection.add(item);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Les items ont été ajoutés au panier dans Firestore.'),
+      ),
     );
   }
 }
