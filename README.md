@@ -6,7 +6,7 @@ A new Flutter project.
 
 This project is a starting point for a Flutter application.
 
-vous pouvez utiliser ce login et mot de passe
+## vous pouvez creer votre propre compte car j'ai ajouté une (fonctionnalité sumplementaire USR6)
 ## email:
     emsi@gmail.com
 ## mot de passe
