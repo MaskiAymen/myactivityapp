@@ -7,9 +7,8 @@ import 'package:myactivityapp/screens/signup_screen.dart';
 import '../utils/colors_utils.dart';
 import '../widgets/reusable_widget.dart';
 
-
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  const SignInScreen({Key? key}) : super(key: key);
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
@@ -41,14 +40,21 @@ class _SignInScreenState extends State<SignInScreen> {
                 SizedBox(
                   height: 30,
                 ),
-                reusablaTextField("Entrer votre nom d'utilisateur",
-                  Icons.person_outline, false, _emailTextController,),
-
+                reusablaTextField(
+                  "Entrer votre nom d'utilisateur",
+                  Icons.person_outline,
+                  false,
+                  _emailTextController,
+                ),
                 SizedBox(
                   height: 30,
                 ),
-                reusablaTextField("Entrer votre mot de passe",
-                    Icons.lock_outline, true, _passwordTextController),
+                reusablaTextField(
+                  "Entrer votre mot de passe",
+                  Icons.lock_outline,
+                  true,
+                  _passwordTextController,
+                ),
                 SizedBox(
                   height: 30,
                 ),
@@ -58,16 +64,32 @@ class _SignInScreenState extends State<SignInScreen> {
                       () {
                     FirebaseAuth.instance
                         .signInWithEmailAndPassword(
-                        email: _emailTextController.text,
-                        password: _passwordTextController.text)
+                      email: _emailTextController.text,
+                      password: _passwordTextController.text,
+                    )
                         .then((value) {
-                      print("Créer un nouveau compte");
+                      // Message et log en cas de connexion réussie
+                      print("Connexion réussie !");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Connexion réussie !'),
+                        ),
+                      );
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => Home()));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Home(),
+                        ),
+                      );
                     }).onError((error, stackTrace) {
-                      print("Error ${error.toString()}");
+                      // Message et log en cas d'erreur de connexion
+                      print("Email ou Mot de passe incorrecte  : ${error.toString()}");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Email ou Mot de passe incorrecte  : ${error.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
                     });
                   },
                 ),
@@ -90,8 +112,12 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => SignUpScreen()));
+            // Message et log pour la navigation vers la page d'inscription
+            print("Navigation vers la page d'inscription");
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SignUpScreen()),
+            );
           },
           child: const Text(
             "S'inscrire",
