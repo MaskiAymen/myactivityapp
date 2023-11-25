@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myactivityapp/screens/ajouter_activity.dart';
-import 'package:myactivityapp/screens/profile.dart';
 import 'package:myactivityapp/screens/signin_screen.dart';
 
 import 'detail_activity.dart';

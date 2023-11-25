@@ -102,7 +102,8 @@ class _DetailPageState extends State<DetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  currentActivity['titre'] ?? '',
+
+                  'titre:${currentActivity['titre'] ?? ''}',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -111,25 +112,33 @@ class _DetailPageState extends State<DetailPage> {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  '${currentActivity['lieu'] ?? ''} - ${currentActivity['prix'] ?? ''}',
+                  'lieu:${currentActivity['lieu'] ?? ''} ',
 
                   style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 16,
+                    color: Colors.black87,
+                    fontSize: 20,
+                  ),
+                ),
+                Text(
+                  'Prix:${currentActivity['prix'] ?? ''}',
+
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 20,
                   ),
                 ),
                 Text(
                   'NbMin: ${currentActivity['nbMin'] ?? ''}',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.green,
+                    fontSize: 20,
+                    color: Colors.black87,
                   ),
                 ),
                 SizedBox(height: 16),
                 Text(
                   'Catégorie: ${currentActivity['categories'] ?? ''}',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     color: Colors.green,
                   ),
                 ),
