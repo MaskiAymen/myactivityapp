@@ -13,7 +13,7 @@ class PanierPage extends StatelessWidget {
         title: Text('Panier'),
         actions: [
           IconButton(
-            icon: Icon(Icons.check),
+            icon: Icon(Icons.add),
             onPressed: () {
               _addToFirestore(context); // Passer le contexte à la fonction
             },

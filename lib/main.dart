@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:myactivityapp/Home.dart';
 import 'package:myactivityapp/screens/ajouter_activity.dart';
 import 'package:myactivityapp/screens/detail_activity.dart';
+import 'package:myactivityapp/screens/signin_screen.dart';
 
 
 import 'firebase_options.dart';
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
       ),
       //home: const SignInScreen(),
       //home: const Home(),
-      home: const Home(),
+      home: const SignInScreen(),
     );
   }
 }
