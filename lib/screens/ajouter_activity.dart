@@ -122,7 +122,12 @@ class _AjoutActivityState extends State<AjoutActivity> {
         leading: IconButton(
           icon: Icon(Icons.keyboard_return, color: Colors.brown),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomeScreen(),
+              ),
+            );
           },
         ),
         actions: [
